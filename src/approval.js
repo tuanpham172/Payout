@@ -7,15 +7,14 @@ export function conditionMatches(condition, request) {
   }
   return false
 }
-function effective(policy, now=new Date()) {
-  const start = policy.effectiveFrom ? new Date(`${policy.effectiveFrom}T00:00:00`) : null
-  const end = policy.effectiveTo ? new Date(`${policy.effectiveTo}T23:59:59`) : null
-  return (!start || now >= start) && (!end || now <= end)
-}
 export function resolveApprovalPolicy(policies, request) {
-  const matches = policies.filter(p=>p.status==='ACTIVE').filter(p=>effective(p)).filter(p=>p.scopeType==='GLOBAL'||p.scopeId===request.campaignId).filter(p=>conditionMatches(p.condition,request)).sort((a,b)=>Number(b.priority||0)-Number(a.priority||0))
+  const matches = policies
+    .filter(p=>p.status==='ACTIVE')
+    .filter(p=>conditionMatches(p.condition,request))
+    .sort((a,b)=>Number(b.priority||0)-Number(a.priority||0))
   if (!matches.length) return {policy:null,error:'NO_MATCHING_POLICY'}
-  const topPriority=Number(matches[0].priority||0); const top=matches.filter(p=>Number(p.priority||0)===topPriority)
+  const topPriority=Number(matches[0].priority||0)
+  const top=matches.filter(p=>Number(p.priority||0)===topPriority)
   if (top.length>1) return {policy:null,error:'AMBIGUOUS_POLICY',candidates:top}
   return {policy:top[0],error:null}
 }
