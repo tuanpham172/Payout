@@ -1,0 +1,12 @@
+export function parseCsv(text) {
+  const lines=text.trim().split(/\r?\n/).filter(Boolean); if(!lines.length)return[]
+  const headers=lines[0].split(',').map(s=>s.trim().toLowerCase())
+  return lines.slice(1).map((line,i)=>{const vals=line.split(',').map(s=>s.trim());const o=Object.fromEntries(headers.map((h,j)=>[h,vals[j]??'']));return{id:`NEW-${i+1}`,sourceRecordId:o.source_record_id||'',customerId:o.customer_id||'',expectedAmount:Number(o.expected_amount||0),accountRef:o.account_ref||'',eligibilityDate:o.eligibility_date||'',actualAmount:null,payoutStatus:'READY',retryCount:0,errorCode:'',liabTransactionId:''}})
+}
+export function validateRecords(records,campaign,existingIds) {
+  const seen=new Set();let duplicateCount=0,invalidCount=0
+  const out=records.map(r=>{const errors=[];let validationStatus='VALID';if(!r.sourceRecordId)errors.push('Missing source_record_id');if(!r.customerId)errors.push('Missing customer_id');if(!r.accountRef)errors.push('Missing account_ref');if(!Number.isFinite(r.expectedAmount)||r.expectedAmount<=0)errors.push('Expected amount must be > 0');if(campaign.fixedAmount&&r.expectedAmount!==campaign.fixedAmount)errors.push(`Amount mismatch: expected ${campaign.fixedAmount}`);const duplicate=r.sourceRecordId&&(seen.has(r.sourceRecordId)||existingIds.has(r.sourceRecordId));if(duplicate){validationStatus='DUPLICATE';duplicateCount++;errors.push('Duplicate source_record_id')}else if(errors.length){validationStatus='INVALID';invalidCount++}if(r.sourceRecordId)seen.add(r.sourceRecordId);return{...r,validationStatus,validationErrors:errors,selected:validationStatus==='VALID'}})
+  return{records:out,validCount:out.filter(r=>r.validationStatus==='VALID').length,duplicateCount,invalidCount}
+}
+export function selectWithinLimits(records,campaign){let remaining=Math.min(Number(campaign.budgetRemaining||0),Number(campaign.dailyCap||Infinity));return records.map(r=>{if(r.validationStatus!=='VALID')return{...r,selected:false};if(r.expectedAmount<=remaining){remaining-=r.expectedAmount;return{...r,selected:true}}return{...r,selected:false,selectionReason:'UNPROCESSED_BY_LIMIT'}})}
+export function demoRecords(count=820,amount=100000){return Array.from({length:count},(_,i)=>({id:`DEMO-${i+1}`,sourceRecordId:`DEMO-${Date.now()}-${String(i+1).padStart(4,'0')}`,customerId:`C${String(90000+i).padStart(5,'0')}`,expectedAmount:amount,accountRef:`00990000${String(i+1).padStart(4,'0')}`,eligibilityDate:new Date().toISOString().slice(0,10),actualAmount:null,payoutStatus:'READY',retryCount:0,errorCode:'',liabTransactionId:''}))}
