@@ -61,6 +61,62 @@ patch(
   'overview payout source imported rows'
 );
 
+// Detail overview cleanup: English status wording and remove approval snapshot / lifecycle sections.
+patch("['Chưa xử lý',st.unprocessed]", "['Pending',st.unprocessed]", 'overview pending metric');
+patch("['Payout success',st.success]", "['Success',st.success]", 'overview success metric');
+patch(
+  '<div class="v2-panel"><h3>Approval snapshot</h3><dl><dt>Module</dt><dd>${esc(r.approvalSnapshot?.module||\'PAYOUT\')}</dd><dt>Policy</dt><dd>${esc(r.approvalSnapshot?.policyName||\'—\')}</dd><dt>Condition</dt><dd>${esc(r.approvalSnapshot?.matchedCondition||\'—\')}</dd><dt>Current approver</dt><dd>${esc(cur(r)?.label||\'—\')}</dd></dl></div>',
+  '',
+  'remove approval snapshot'
+);
+patch(
+  '<div class="v2-info-strip"><strong>Record lifecycle</strong><span>Accepted records nằm ở tab Chưa xử lý cho đến khi LIAB trả final result. Sau đó record chuyển sang Thành công hoặc Thất bại / Exception.</span></div>',
+  '',
+  'remove record lifecycle'
+);
+
+// Upload review: remove resolved policy presentation. Resolution still happens in business logic before submit.
+patch(
+  '<div class="v2-panel"><p><b>Resolved policy:</b> ${a.resolution.policy?esc(a.resolution.policy.name):esc(a.resolution.error)}</p></div>',
+  '',
+  'remove resolved policy display'
+);
+
+// Records: use English wording for user-facing groups and descriptions.
+patch(
+  '<p>Accepted records được hiển thị ngay sau submit; final result từ LIAB sẽ phân loại sang Success hoặc Failed.</p>',
+  '<p>Imported records are available immediately after submit; LIAB final results are grouped into Success or Failed / Exception.</p>',
+  'records description english'
+);
+patch('>Chưa xử lý <span>${unprocessed.length}</span>', '>Pending <span>${unprocessed.length}</span>', 'records pending tab');
+patch('>Thành công <span>${success.length}</span>', '>Success <span>${success.length}</span>', 'records success tab');
+patch('>Thất bại / Exception <span>${failed.length}</span>', '>Failed / Exception <span>${failed.length}</span>', 'records failed tab');
+patch('Không có record trong nhóm này.', 'No records in this group.', 'records empty state english');
+
+// Approval tab: remove explanatory sentence and the policy/current-step side panel.
+patch(
+  '<p>Mỗi step có thể đồng thời cấu hình nhiều ROLE và nhiều USER. User được approve nếu match ít nhất một ROLE hoặc nằm trong danh sách USER.</p>',
+  '',
+  'remove approval explanation'
+);
+patch(
+  '<aside class="v2-panel"><h3>${esc(r.approvalSnapshot?.policyName||\'Approval policy\')}</h3><p><b>Module:</b> ${esc(r.approvalSnapshot?.module||\'PAYOUT\')}</p><p><b>Approval total:</b> ${money(r.approvalTotalAmount)}</p>${s?`<hr><span>Current step</span><h3>${s.level} · ${esc(s.label)}</h3><div class="v2-actions"><button data-action="approve" class="v2-btn v2-success">${icon(\'check\')} Approve</button><button data-action="reject" class="v2-btn v2-danger-outline">${icon(\'x\')} Reject</button></div>`:\'\'}</aside>',
+  '',
+  'remove approval policy side panel'
+);
+
+// English confirmation copy for record processing states.
+patch(
+  '<p>Records vẫn nằm ở tab Chưa xử lý trong khi LIAB đang processing.</p>',
+  '<p>Records remain in the Pending tab while LIAB is processing.</p>',
+  'processing confirm english'
+);
+patch(
+  '<p>Final result sẽ chuyển records sang Thành công hoặc Thất bại / Exception.</p>',
+  '<p>Final results move records to Success or Failed / Exception.</p>',
+  'final result confirm english'
+);
+
 // Approval rule form labels and priority behavior.
 patch('<label>From amount<input', '<label>From amount (>=)<input', 'from amount label');
 patch('<label>To amount<input', '<label>To amount (<=)<input', 'to amount label');
