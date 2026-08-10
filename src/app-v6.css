@@ -1,0 +1,4 @@
+@import url('./app-v5.css');
+
+/* Detail summary now has three business metrics. */
+.v2-summary-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}
