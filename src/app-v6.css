@@ -2,3 +2,9 @@
 
 /* Detail summary now has three business metrics. */
 .v2-summary-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}
+
+/* Overview keeps a single full-width business panel after removing Approval snapshot. */
+.v2-detail-body .v2-two-col{grid-template-columns:1fr;}
+
+/* Approval detail now shows only the approval route; the policy side panel was removed. */
+.v2-approval-layout{grid-template-columns:1fr;}
