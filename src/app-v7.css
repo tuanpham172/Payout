@@ -1,0 +1,4 @@
+@import url('./app-v6.css');
+
+/* Additive v7 behavior only; preserve the current UI-SCREENS layout. */
+.v7-approval-actions{margin-top:20px;justify-content:flex-start;}
