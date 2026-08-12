@@ -1,0 +1,4 @@
+@import url('./app-v7.css');
+
+/* v8 keeps the current UI-SCREENS layout. */
+.v2-icon-btn:disabled{opacity:.35;cursor:not-allowed;}
